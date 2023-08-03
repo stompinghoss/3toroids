@@ -1,0 +1,14 @@
+{"depcheck": {
+	"ignoreMatches": 
+		["core-js",
+		"eslint-config-standard",
+		"prettier",
+		"regenerator-runtime",
+		"webpack",
+		"webpack-cli",
+		"eslint-plugin-promise",
+		"eslint-plugin-n",
+		"eslint-plugin-react"
+		]
+	}
+}
