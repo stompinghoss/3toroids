@@ -56,13 +56,12 @@ class Scene {
       diagOn: false,
     };
 
-    this.margin = 0.05;
+    this.cameraPos = new THREE.Vector3(50, 100, 600);
+    this.cameraLookAt = new THREE.Vector3(0, 0, 0);
+
     this.scene = new THREE.Scene();
     this.toroidMeshes = [];
-    this.camera = Scene.createAndSetupCamera(
-      new THREE.Vector3(50, 100, 600),
-      new THREE.Vector3(0, 0, 0),
-    );
+    this.camera = Scene.createAndSetupCamera(this.cameraPos, this.cameraLookAt);
     this.renderer = this.createAndSetupRenderer();
     this.composer = this.createAndSetupComposer(this.camera, this.renderer);
     this.textureLoader = new THREE.TextureLoader();
@@ -99,12 +98,12 @@ class Scene {
 
   texturedRender() {
     Promise.all([
-      this.loadTexture('/assets/Metal044A_4K-JPG/Metal044A_4K_Color.jpg'),
-      this.loadTexture('/assets/Metal044A_4K-JPG/Metal044A_4K_Roughness.jpg'), // from https://ambientcg.com/
-      this.loadTexture('/assets/Metal044A_4K-JPG/Metal044A_4K_Metalness.jpg'), // from https://ambientcg.com/
+      this.loadTexture('/assets/Metal044A_1K-JPG/Metal044A_1K_Color.jpg'),
+      this.loadTexture('/assets/Metal044A_1K-JPG/Metal044A_1K_Roughness.jpg'), // from https://ambientcg.com/
+      this.loadTexture('/assets/Metal044A_1K-JPG/Metal044A_1K_Metalness.jpg'), // from https://ambientcg.com/
       this.loadTexture('/assets/OutdoorHDRI026_2K-TONEMAPPED.jpg'),
-      this.loadTexture('/assets/Metal044A_4K-JPG/Metal044A_4K_Displacement.jpg'),
-      this.loadTexture('/assets/Metal044A_4K-JPG/Metal044A_4K_NormalGL.jpg'),
+      this.loadTexture('/assets/Metal044A_1K-JPG/Metal044A_1K_Displacement.jpg'),
+      this.loadTexture('/assets/Metal044A_1K-JPG/Metal044A_1K_NormalGL.jpg'),
     ]).then(([color, roughnessMap, metalnessMap, envMap, displacement, normalOpenGL]) => {
       const mat = new THREE.MeshPhysicalMaterial({
         map: color,
@@ -208,8 +207,8 @@ class Scene {
       // Create geometry
       const toroidRadius = 100;
       const tubeRadius = 10;
-      const radialSegments = 1024;
-      const toroidSegments = 1024;
+      const radialSegments = 64;
+      const toroidSegments = 64;
       const offset = 0;
       const toroidGeometry1 = new THREE.TorusGeometry(
         toroidRadius,
@@ -341,8 +340,8 @@ class Scene {
     light.castShadow = true;
     this.scene.add(light);
 
-    light.shadow.mapSize.width = 2048;
-    light.shadow.mapSize.height = 2048;
+    light.shadow.mapSize.width = 1024;
+    light.shadow.mapSize.height = 1024;
     light.shadow.camera.near = 20;
     light.shadow.camera.far = 1000;
   }
