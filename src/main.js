@@ -46,7 +46,7 @@ class Scene {
     // Control what's rendered
     this.renderControls = {
       toroidsOn: true,
-      axesOn: true,
+      axesOn: false,
       antiAliasing: false,
       shadowPass: false,
       shadowsOn: true,
@@ -98,22 +98,25 @@ class Scene {
 
   texturedRender() {
     Promise.all([
-      this.loadTexture('/assets/Metal044A_1K-JPG/Metal044A_1K_Color.jpg'),
-      this.loadTexture('/assets/Metal044A_1K-JPG/Metal044A_1K_Roughness.jpg'), // from https://ambientcg.com/
-      this.loadTexture('/assets/Metal044A_1K-JPG/Metal044A_1K_Metalness.jpg'), // from https://ambientcg.com/
+      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Color.jpg'),
+      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Roughness.jpg'),
+      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Metalness.jpg'),
       this.loadTexture('/assets/OutdoorHDRI026_2K-TONEMAPPED.jpg'),
-      this.loadTexture('/assets/Metal044A_1K-JPG/Metal044A_1K_Displacement.jpg'),
-      this.loadTexture('/assets/Metal044A_1K-JPG/Metal044A_1K_NormalGL.jpg'),
-    ]).then(([color, roughnessMap, metalnessMap, envMap, displacement, normalOpenGL]) => {
-      const mat = new THREE.MeshPhysicalMaterial({
-        map: color,
-        metalnessMap,
+      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Displacement.jpg'),
+      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_NormalGL.jpg'),
+    ]).then(([map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap]) => {
+      const mat = new THREE.MeshStandardMaterial({
+        map,
         roughnessMap,
+        metalnessMap,
         envMap,
-        displacementMap: displacement,
-        normalMap: normalOpenGL,
-        normalScale: new THREE.Vector2(10, 10),
+        displacementMap,
+        normalMap,
+        normalScale: new THREE.Vector2(1, 1),
       });
+
+      mat.metalness = 0.8;
+      mat.roughness = 1.0;
 
       this.createScene(mat);
     }).catch((error) => {
@@ -148,7 +151,7 @@ class Scene {
     const renderer = new THREE.WebGLRenderer({ antialias: true });
 
     if (this.renderControls.toneMapping) {
-      renderer.toneMapping = THREE.ReinhardToneMapping;
+      renderer.toneMapping = THREE.LinearToneMapping;
       renderer.toneMappingExposure = 2.0; // Adjust this value to control the overall brightness
     }
 
@@ -228,6 +231,7 @@ class Scene {
         radialSegments,
         toroidSegments,
       );
+
       const toroidsXoffset = 0;
       const toroidsYoffset = 200; // Height above origin
       const toroidsZoffset = 0; // Distance from camera
@@ -334,7 +338,7 @@ class Scene {
   }
 
   createLight(planeSize, pos) {
-    const light = new THREE.PointLight(0xdddddd, 4, planeSize + 100);
+    const light = new THREE.PointLight(0xdddddd, 0.5, planeSize + 100);
 
     light.position.copy(pos);
     light.castShadow = true;
@@ -347,12 +351,13 @@ class Scene {
   }
 
   createToroidLights(planeSize) {
+
     this.createLight(planeSize, new THREE.Vector3(0, planeSize, 0));
     this.createLight(planeSize, new THREE.Vector3(0, planeSize / 2, planeSize / 2));
     this.createLight(planeSize, new THREE.Vector3(planeSize / 2, planeSize / 2, 0));
     const ambientLight = new THREE.AmbientLight(0x404040, 1); // Soft white light
     ambientLight.position.set(0, 100, 200);
-    this.scene.add(ambientLight);
+    //this.scene.add(ambientLight);
   }
 
   createAxes() {
