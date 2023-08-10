@@ -1,34 +1,3 @@
-/*
-Rotating three.js shapes and some soft body physics shapes colliding.
-
-Notes:
-Soft body physics in Ammo is too slow to be useful?Then again, the three demo is ok.
-Things to remember to document:
-  Had to re think whole solution to work with async loading of textures. Didn't get that from cgpt.
-  Load of texture might work, but wouldn't apply and no error to help.
-  There comes a point where you've hacked it tooo much and cgpt doesn't know what to do.
-  Seems to be prone to version/dependency issues.
-  Kept having issues getting compatible versions of three and Ammo.
-  And sometimes it would generate the same code with the same error. Maybe a version/training issue.
-  Going back to a simple request in order get phsysics, seemed to work better.
-  It went for Ammo to begin, but the documentation was terrible and then end
-  up in debug which switches mind out of creative mode.
-    Introducing physics with Ammo became mainly about hacking it out of three/Ammo examples.
-TODOs:
-    Tidy
-        'unused' scene variable
-    Polyfills for older browsers? Detect which version it can work with.
-    Convert to type script
-    bundle
-    Speed up load
-    Fully remove stats
-    Further refactor: Get rid of all globals
-    Why is there faint blue light on the yz plane?
-
-Larger todos:
-    Consider moving the whole thing to enable 3d or oimo which seems much faster.
-*/
-
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -54,9 +23,15 @@ class Scene {
       toneMapping: true,
       bloom: false,
       diagOn: false,
+      planeXoffset: 0,
+      planeYoffset: -100,
+      planeZoffset: 0,
+      toroidXoffset: 0,
+      toroidYoffset: 50,
+      toroidZoffset: 0,
     };
 
-    this.cameraPos = new THREE.Vector3(50, 100, 600);
+    this.cameraPos = new THREE.Vector3(100, 100, 700);
     this.cameraLookAt = new THREE.Vector3(0, 0, 0);
 
     this.scene = new THREE.Scene();
@@ -139,7 +114,7 @@ class Scene {
       75,
       window.innerWidth / window.innerHeight,
       0.1,
-      1000,
+      1200,
     );
     camera.position.copy(pos);
     camera.lookAt(look);
@@ -232,25 +207,33 @@ class Scene {
         toroidSegments,
       );
 
-      const toroidsXoffset = 0;
-      const toroidsYoffset = 200; // Height above origin
-      const toroidsZoffset = 0; // Distance from camera
-
       this.toroidMeshes[0] = new THREE.Mesh(toroidGeometry1, material);
-      this.toroidMeshes[0].position.set(toroidsXoffset, toroidsYoffset, toroidsZoffset);
+      this.toroidMeshes[0].position.set(
+        this.renderControls.toroidXoffset,
+        this.renderControls.toroidYoffset,
+        this.renderControls.toroidZoffset,
+      );
       this.toroidMeshes[0].castShadow = true;
       this.scene.add(this.toroidMeshes[0]);
 
       this.toroidMeshes[1] = new THREE.Mesh(toroidGeometry2, material);
       this.toroidMeshes[1].rotation.x = Math.PI / 2;
-      this.toroidMeshes[1].position.set(toroidsXoffset, toroidsYoffset, toroidsZoffset);
+      this.toroidMeshes[1].position.set(
+        this.renderControls.toroidXoffset,
+        this.renderControls.toroidYoffset,
+        this.renderControls.toroidZoffset,
+      );
       this.toroidMeshes[1].castShadow = true;
       this.scene.add(this.toroidMeshes[1]);
 
       // Create mesh 3
       this.toroidMeshes[2] = new THREE.Mesh(toroidGeometry3, material);
       this.toroidMeshes[2].rotation.x = Math.PI / 3;
-      this.toroidMeshes[2].position.set(toroidsXoffset, toroidsYoffset, toroidsZoffset);
+      this.toroidMeshes[2].position.set(
+        this.renderControls.toroidXoffset,
+        this.renderControls.toroidYoffset,
+        this.renderControls.toroidZoffset,
+      );
       this.toroidMeshes[2].castShadow = true;
       this.scene.add(this.toroidMeshes[2]);
     }
@@ -264,11 +247,10 @@ class Scene {
 
   createPlane(
     orientation,
-    planeSize = 550,
+    planeSize = 450,
     planeWidthSegments = 10,
     planeHeightSegments = 10,
     wframe = false,
-    offset = 0,
     transparent = false,
     opacity = 1.0,
     color1 = 0xffffff,
@@ -301,14 +283,26 @@ class Scene {
     switch (orientation) {
       case 'xz':
         mesh.rotation.x = -Math.PI / 2;
-        mesh.position.set(offset, 0, offset);
+        mesh.position.set(
+          this.renderControls.planeXoffset,
+          this.renderControls.planeYoffset,
+          this.renderControls.planeZoffset,
+        );
         break;
       case 'xy':
-        mesh.position.set(offset, offset + planeSize / 2, -planeSize / 2);
+        mesh.position.set(
+          this.renderControls.planeXoffset,
+          this.renderControls.planeYoffset + planeSize / 2,
+          this.renderControls.planeZoffset - planeSize / 2,
+        );
         break;
       case 'yz':
         mesh.rotation.y = -Math.PI / 2;
-        mesh.position.set(-planeSize / 2, offset + planeSize / 2, offset);
+        mesh.position.set(
+          this.renderControls.planeXoffset - planeSize / 2,
+          this.renderControls.planeYoffset + planeSize / 2,
+          this.renderControls.planeZoffset,
+        );
         break;
       default:
         // eslint-disable-next-line no-console
@@ -351,21 +345,43 @@ class Scene {
   }
 
   createToroidLights(planeSize) {
-
     this.createLight(planeSize, new THREE.Vector3(0, planeSize, 0));
     this.createLight(planeSize, new THREE.Vector3(0, planeSize / 2, planeSize / 2));
     this.createLight(planeSize, new THREE.Vector3(planeSize / 2, planeSize / 2, 0));
-    const ambientLight = new THREE.AmbientLight(0x404040, 1); // Soft white light
+    const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
     ambientLight.position.set(0, 100, 200);
-    //this.scene.add(ambientLight);
+    this.scene.add(ambientLight);
   }
 
   createAxes() {
     if (this.renderControls.axesOn) {
       const axes = [
-        { direction: new THREE.Vector3(100, 0, 0), color: 0xff0000 }, // x-axis
-        { direction: new THREE.Vector3(0, 100, 0), color: 0x00ff00 }, // y-axis
-        { direction: new THREE.Vector3(0, 0, 100), color: 0x0000ff }, // z-axis
+        {
+          direction: new THREE.Vector3(
+            this.renderControls.planeXoffset + 100,
+            this.renderControls.planeYoffset,
+            this.renderControls.planeZoffset,
+          ),
+          color: 0xff0000,
+        }, // x-axis
+
+        {
+          direction: new THREE.Vector3(
+            this.renderControls.planeXoffset,
+            this.renderControls.planeYoffset + 100,
+            this.renderControls.planeZoffset,
+          ),
+          color: 0x00ff00,
+        }, // y-axis
+
+        {
+          direction: new THREE.Vector3(
+            this.renderControls.planeXoffset,
+            this.renderControls.planeYoffset,
+            this.renderControls.planeZoffset + 100,
+          ),
+          color: 0x0000ff,
+        }, // z-axis
       ];
 
       axes.forEach((axis) => {
@@ -376,7 +392,11 @@ class Scene {
 
   createAndAddLine(direction, color) {
     const geometry = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(0, 0, 0), // start point
+      new THREE.Vector3(
+        this.renderControls.planXoffset,
+        this.renderControls.planeYoffset,
+        this.renderControls.planeZoffset,
+      ), // start point
       direction, // end point
     ]);
 
@@ -409,4 +429,5 @@ class Scene {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 const scene = new Scene();
