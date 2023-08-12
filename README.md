@@ -3,7 +3,9 @@
 For this example, I used ChatGPT+.
 * The below documentation refers shows how a simple example was built up. 
 * For more complex examples, it's too time consuming to write up the conversation in each case. 
-
+* The output for a richer example is in the dist folder and can be found hosted [here](https://3tororids.pages.dev)
+* That example uses textures, more lights, shading, shadows etc.
+  
 Code outputs are shown in code blocks.
 
 >Write JavaScript, embedded in html that draws a 3d toroid and rotates in continually through the x and z axis
