@@ -25,6 +25,7 @@
     "eslint-plugin-security": "^1.7.1",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.3",
+    "license-webpack-plugin": "^4.0.2",
     "prettier": "^3.0.0",
     "regenerator-runtime": "^0.13.11",
     "snyk": "^1.1200.0",
