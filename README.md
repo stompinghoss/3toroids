@@ -1,10 +1,22 @@
-# Generating 3d geometry using ChatGPT 3.5 and 4
+#Generating 3d geometry using ChatGPT 3.5 and 4
 
 For this example, I used ChatGPT+.
-* The below documentation refers shows how a simple example was built up. 
+* The below documentation refers shows how a simple [example](./src/toroid.html) was built up. 
+* 
 * For more complex examples, it's too time consuming to write up the conversation in each case. 
-* The output for a richer example is in the dist folder and can be found hosted [here](https://3toroids.pages.dev). That is mind primarily  with ChatGPT4.
-* That example uses textures, more lights, shading, shadows etc.
+* 
+* The output for a richer example ('3toroids') is in the dist folder and can be found hosted [here](https://3toroids.pages.dev). 
+* That is made primarily (ChatGPT3.5 quickly couldn't do what I wanted) with ChatGPT4.
+* That example was built up to add in more and more features;
+* 
+* More shapes
+* Planes to represent a corner to look at shadoows
+* Shading planes
+* Lighting
+* Shadoows
+* Anti aliasing
+* Physical based textures etc.
+* For the simple example, it was built up as follows below. 
   
 Code outputs are shown in code blocks.
 
