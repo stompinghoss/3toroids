@@ -1,3 +1,7 @@
+// TODO: Another tidy up. Move all  magic numbers to consts
+// See if I can make the lighting a bit brighter to emphasise the shadows
+// And see if the corner shading can be more interesting.
+
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -12,12 +16,16 @@ class Scene {
     // needed to ensure animate is able to be called as a method and not a free function
     this.animate = this.animate.bind(this);
 
-    // Control what's rendered
+    /* Control what's rendered
+       Left in some options that enable code that produces issues
+       because thought it was helpful to be able to see the differences.
+    */
+
     this.renderControls = {
       toroidsOn: true,
       axesOn: false,
-      antiAliasing: false,
-      shadowPass: false,
+      antiAliasing: false, // FXAA pass - Doesn't do what was intended but left in to show it
+      shadowPass: false, // Doesn't do what was intended but left in to show it
       shadowsOn: true,
       texturesOn: true,
       toneMapping: true,
@@ -29,11 +37,27 @@ class Scene {
       toroidXoffset: 0,
       toroidYoffset: 50,
       toroidZoffset: 0,
+      toroidMetalness: 0.8,
+      toroidRoughness: 0.5,
+      toroidLightIntensity: 0.8,
+      cameraAngleAroundOrigin: 0.0,
+      cameraRotationRadius: 600,
+      cameraAngleAroundY: 0,
+      rotationDirection: 1, // 1 means increasing angle, -1 means decreasing angle
+      rotationSpeed: 0.01,
     };
 
-    this.cameraPos = new THREE.Vector3(100, 100, 700);
-    this.cameraLookAt = new THREE.Vector3(0, 0, 0);
+    this.mediaRecorderControls = {
+      fps: 60,
+      durationInMs: 10000,
+      options: { mimeType: 'video/webm;codecs=vp9' }, // adjust format as needed
+    };
 
+    this.planeSize = 450;
+    this.shadowMapFactorOfPlaneSize = 8;
+    this.videoLength = 10000; // ms
+    this.cameraPos = new THREE.Vector3(100, 100, 700); // Tweak as appropriate for the scene
+    this.cameraLookAt = new THREE.Vector3(0, 0, 0); // Look at the origin
     this.scene = new THREE.Scene();
     this.toroidMeshes = [];
     this.camera = Scene.createAndSetupCamera(this.cameraPos, this.cameraLookAt);
@@ -41,7 +65,7 @@ class Scene {
     this.composer = this.createAndSetupComposer(this.camera, this.renderer);
     this.textureLoader = new THREE.TextureLoader();
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-
+    this.rotationIncrement = 0.01;
     this.controls.update();
 
     if (this.renderControls.texturesOn) {
@@ -76,7 +100,7 @@ class Scene {
       this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Color.jpg'),
       this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Roughness.jpg'),
       this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Metalness.jpg'),
-      this.loadTexture('/assets/OutdoorHDRI026_2K-TONEMAPPED.jpg'),
+      this.loadTexture('/assets/DayEnvironmentHDRI033_1K-TONEMAPPED.jpg'),
       this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Displacement.jpg'),
       this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_NormalGL.jpg'),
     ]).then(([map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap]) => {
@@ -90,8 +114,9 @@ class Scene {
         normalScale: new THREE.Vector2(1, 1),
       });
 
-      mat.metalness = 0.8;
-      mat.roughness = 1.0;
+      //  Tweak according to how you want the material to look
+      mat.metalness = this.renderControls.toroidMetalness;
+      mat.roughness = this.renderControls.toroidRoughness;
 
       this.createScene(mat);
     }).catch((error) => {
@@ -104,7 +129,47 @@ class Scene {
     this.createAxes();
     this.createToroids(toroidMat);
     this.createPlanes();
-    this.createToroidLights(500);
+    this.createToroidLights(this.planeSize, 600, 0xdddddd);
+    this.createAmbientLight(0x888888, 1);
+
+    // Assuming your Three.js animation is set up and rendering to a canvas
+    const canvas = document.querySelector('canvas');
+    const stream = canvas.captureStream(this.mediaRecorderControls.fps); // fps, adjust as needed
+    const mediaRecorder = new MediaRecorder(stream, this.mediaRecorderControls.options);
+    const chunks = [];
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      // Automatically download the video
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = 'animation.webm';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    };
+
+    function startRecording(durationInMs) {
+      mediaRecorder.start();
+
+      setTimeout(() => {
+        mediaRecorder.stop();
+      }, durationInMs); // stop recording after this many milli seconds
+    }
+
+    startRecording(this.mediaRecorderControls.durationInMs);
+
     this.animate();
   }
 
@@ -113,8 +178,8 @@ class Scene {
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
-      0.1,
-      1200,
+      0.1, // front of frustum
+      1200, // back
     );
     camera.position.copy(pos);
     camera.lookAt(look);
@@ -124,6 +189,9 @@ class Scene {
   createAndSetupRenderer() {
     // Create renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const width = 1920; // e.g., Full HD width
+    const height = 1080; // e.g., Full HD height
+    renderer.setSize(width, height);
 
     if (this.renderControls.toneMapping) {
       renderer.toneMapping = THREE.LinearToneMapping;
@@ -134,9 +202,10 @@ class Scene {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Enable shadows in the renderer
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadow mapping
+    if (this.renderControls.shadowsOn) {
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadow mapping
+    }
 
     return renderer;
   }
@@ -156,17 +225,6 @@ class Scene {
       composer.addPass(fxaaPass);
     }
 
-    if (this.renderControls.bloom) {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 1.5, 0.4, 0.85);
-      bloomPass.threshold = 0.1;
-      bloomPass.strength = 0.5;
-      bloomPass.radius = 0;
-
-      composer.addPass(bloomPass);
-    }
-
     if (this.renderControls.shadowPass) {
       // NOTE: This isn't working. When switched on it's created
       // zig zag aretfaces in adjoining edges like adjacent plane edges
@@ -174,7 +232,19 @@ class Scene {
       const shadowPass = new ShaderPass(CopyShader);
       shadowPass.uniforms.opacity.value = 1.0;
       shadowPass.renderToScreen = true; // Render the final result to the screen
-      this.composer.addPass(shadowPass);
+      composer.addPass(shadowPass);
+    }
+
+    if (this.renderControls.bloom) {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      // Numbers all experimental
+      const bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), 1.5, 0.4, 0.85);
+      bloomPass.threshold = 0.1;
+      bloomPass.strength = 0.5;
+      bloomPass.radius = 0;
+
+      composer.addPass(bloomPass);
     }
 
     return composer;
@@ -240,21 +310,21 @@ class Scene {
   }
 
   createPlanes() {
-    this.createPlane('xz');
-    this.createPlane('xy');
-    this.createPlane('yz');
+    this.createPlane('xz', 0x999999, 0xaaaaaa);
+    this.createPlane('xy', 0xffffff, 0x000000);
+    this.createPlane('yz', 0xffffff, 0x000000);
   }
 
   createPlane(
     orientation,
+    fromCol = 0xffffff,
+    toCol = 0x000000,
     planeSize = 450,
     planeWidthSegments = 10,
     planeHeightSegments = 10,
     wframe = false,
     transparent = false,
     opacity = 1.0,
-    color1 = 0xffffff,
-    color2 = 0x000000,
   ) {
     if (typeof orientation === 'undefined') {
       throw new Error('Unspecified plane. Cannot setup a plane without details, e.g. xz, xy or yz.');
@@ -266,7 +336,6 @@ class Scene {
       planeWidthSegments,
       planeHeightSegments,
     );
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(Scene.createPlaneShading(color1, color2, geo), 3));
 
     const mat = new THREE.MeshPhongMaterial({
       vertexColors: true,
@@ -279,10 +348,14 @@ class Scene {
     });
 
     const mesh = new THREE.Mesh(geo, mat);
+    const rotationMatrix = new THREE.Matrix4();
 
     switch (orientation) {
       case 'xz':
-        mesh.rotation.x = -Math.PI / 2;
+        // this is needed because rotations don't actually change the vertices in the mesh
+        rotationMatrix.makeRotationX(-Math.PI / 2);
+        geo.applyMatrix4(rotationMatrix);
+
         mesh.position.set(
           this.renderControls.planeXoffset,
           this.renderControls.planeYoffset,
@@ -297,7 +370,9 @@ class Scene {
         );
         break;
       case 'yz':
-        mesh.rotation.y = -Math.PI / 2;
+        rotationMatrix.makeRotationY(-Math.PI / 2);
+        geo.applyMatrix4(rotationMatrix);
+
         mesh.position.set(
           this.renderControls.planeXoffset - planeSize / 2,
           this.renderControls.planeYoffset + planeSize / 2,
@@ -309,21 +384,30 @@ class Scene {
         console.log('Fatal error, should have thrown if no plane details.');
     }
 
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(Scene.createPlaneShading(fromCol, toCol, geo, planeSize, orientation), 3));
+
     mesh.receiveShadow = true;
+
     this.scene.add(mesh);
   }
 
-  static createPlaneShading(viewerCol, horizonCol, geometry) {
-    // Calculate colors for the xz plane vertices
+  static createPlaneShading(viewerCol, horizonCol, geometry, planeSize, orientation) {
+    // Calculate colors for the plane vertices
     const planeColors = [];
-    const viewerColor = new THREE.Color(viewerCol); // White color at the viewer
-    const horizonColor = new THREE.Color(horizonCol); // Black color at the horizon
+    const viewerColor = new THREE.Color(viewerCol);
+    const horizonColor = new THREE.Color(horizonCol);
+
     for (let i = 0; i < geometry.attributes.position.count; i += 1) {
       const vertex = new THREE.Vector3();
       vertex.fromBufferAttribute(geometry.attributes.position, i);
-      // Map the y-coordinate of the vertex to a value between 0 and 1
-      const t = (vertex.y + 50) / 2000;
-      // Linearly interpolate between viewerColor and horizonColor based on t
+
+      let t;
+      if (orientation === 'xz') {
+        t = (vertex.z + planeSize / 2) / planeSize; // Use the z-coordinate for xz plane
+      } else {
+        t = (vertex.y + planeSize / 2) / planeSize; // Use the y-coordinate for other planes
+      }
+
       const color = new THREE.Color().lerpColors(viewerColor, horizonColor, t);
       planeColors.push(color.r, color.g, color.b);
     }
@@ -331,34 +415,70 @@ class Scene {
     return planeColors;
   }
 
-  createLight(planeSize, pos) {
-    const light = new THREE.PointLight(0xdddddd, 0.5, planeSize + 100);
-
+  createLight(
+    receivingSurfaceSize,
+    colour,
+    pos,
+    lightDistance = 100,
+    intensity = 0.5,
+    shadowCamNear = 20,
+    shadowCamFar = 1000,
+  ) {
+    // args are colour, intensity, distance and decay
+    const light = new THREE.PointLight(colour, intensity, lightDistance);
     light.position.copy(pos);
     light.castShadow = true;
     this.scene.add(light);
 
-    light.shadow.mapSize.width = 1024;
-    light.shadow.mapSize.height = 1024;
-    light.shadow.camera.near = 20;
-    light.shadow.camera.far = 1000;
+    if (this.renderControls.shadowsOn) {
+      light.shadow.mapSize.width = receivingSurfaceSize * this.shadowMapFactorOfPlaneSize;
+      light.shadow.mapSize.height = receivingSurfaceSize * this.shadowMapFactorOfPlaneSize;
+      light.shadow.camera.near = shadowCamNear;
+      light.shadow.camera.far = shadowCamFar;
+    }
   }
 
-  createToroidLights(planeSize) {
-    this.createLight(planeSize, new THREE.Vector3(0, planeSize, 0));
-    this.createLight(planeSize, new THREE.Vector3(0, planeSize / 2, planeSize / 2));
-    this.createLight(planeSize, new THREE.Vector3(planeSize / 2, planeSize / 2, 0));
-    const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
-    ambientLight.position.set(0, 100, 200);
+  createToroidLights(receivingSurfaceSize, lightOffsetFromReceivingSurface, lightColour) {
+    const lightDistance = receivingSurfaceSize + lightOffsetFromReceivingSurface;
+    const halfReceivingSurfaceSize = receivingSurfaceSize / 2;
+
+    this.createLight(
+      receivingSurfaceSize,
+      lightColour,
+      new THREE.Vector3(0, receivingSurfaceSize, 0),
+      lightDistance,
+      this.renderControls.toroidLightIntensity,
+    );
+    this.createLight(
+      receivingSurfaceSize,
+      lightColour,
+      new THREE.Vector3(0, halfReceivingSurfaceSize, halfReceivingSurfaceSize),
+      lightDistance,
+      this.renderControls.toroidLightIntensity,
+    );
+    this.createLight(
+      receivingSurfaceSize,
+      lightColour,
+      new THREE.Vector3(halfReceivingSurfaceSize, halfReceivingSurfaceSize, 0),
+      lightDistance,
+      this.renderControls.toroidLightIntensity,
+    );
+  }
+
+  createAmbientLight(colour, intensity) {
+    // args are colour and intensity
+    const ambientLight = new THREE.AmbientLight(colour, intensity); // Soft white light
+    ambientLight.position.set(0, 100, 200); // Move around as required
     this.scene.add(ambientLight);
   }
 
   createAxes() {
+    const lineLength = 100;
     if (this.renderControls.axesOn) {
       const axes = [
         {
           direction: new THREE.Vector3(
-            this.renderControls.planeXoffset + 100,
+            this.renderControls.planeXoffset + lineLength,
             this.renderControls.planeYoffset,
             this.renderControls.planeZoffset,
           ),
@@ -368,7 +488,7 @@ class Scene {
         {
           direction: new THREE.Vector3(
             this.renderControls.planeXoffset,
-            this.renderControls.planeYoffset + 100,
+            this.renderControls.planeYoffset + lineLength,
             this.renderControls.planeZoffset,
           ),
           color: 0x00ff00,
@@ -378,7 +498,7 @@ class Scene {
           direction: new THREE.Vector3(
             this.renderControls.planeXoffset,
             this.renderControls.planeYoffset,
-            this.renderControls.planeZoffset + 100,
+            this.renderControls.planeZoffset + lineLength,
           ),
           color: 0x0000ff,
         }, // z-axis
@@ -406,9 +526,46 @@ class Scene {
     // add the line to the scene
     this.scene.add(line);
   }
+  /*
+  animate() {
+    requestAnimationFrame(this.animate);
+
+    // Calculate the new camera position
+    this.camera.position.x = this.renderControls.cameraRotationRadius
+                             * Math.cos(this.renderControls.cameraAngleAroundOrigin);
+    this.camera.position.z = this.renderControls.cameraRotationRadius
+                             * Math.sin(this.renderControls.cameraAngleAroundOrigin);
+
+    // Ensure the camera still looks at the origin (or any other point of interest)
+    this.camera.lookAt(this.scene.position);
+
+    this.render();
+
+    this.renderControls.cameraAngleAroundOrigin += 0.01;
+  }
+*/
 
   animate() {
     requestAnimationFrame(this.animate);
+
+    const r = this.renderControls.cameraRotationRadius;
+
+    const x = r * Math.cos(this.renderControls.cameraAngleAroundY);
+    const z = r * Math.sin(this.renderControls.cameraAngleAroundY);
+
+    this.camera.position.set(x, this.camera.position.y, z);
+    this.camera.lookAt(this.scene.position);
+
+    // Update rotation angle based on direction
+    this.renderControls.cameraAngleAroundY += this.renderControls.rotationSpeed * 
+                                              this.renderControls.rotationDirection;
+
+    // If it exceeds 90 degrees (in radians) or goes below 0, flip the direction
+    if (this.renderControls.cameraAngleAroundY >= Math.PI / 2 || 
+        this.renderControls.cameraAngleAroundY <= 0) {
+        this.renderControls.rotationDirection *= -1;
+    }
+
     this.render();
   }
 
@@ -417,9 +574,9 @@ class Scene {
       // Apply rotation
       /* eslint-disable no-param-reassign */
       this.toroidMeshes.forEach((item) => {
-        item.rotation.x += 0.01;
-        item.rotation.y += 0.01;
-        item.rotation.z += 0.01;
+        item.rotation.x += this.rotationIncrement;
+        item.rotation.y += this.rotationIncrement;
+        item.rotation.z += this.rotationIncrement;
       });
     }
 
