@@ -48,6 +48,7 @@ class Scene {
     };
 
     this.mediaRecorderControls = {
+      recordingOn: true,
       fps: 60,
       durationInMs: 10000,
       options: { mimeType: 'video/webm;codecs=vp9' }, // adjust format as needed
@@ -168,7 +169,10 @@ class Scene {
       }, durationInMs); // stop recording after this many milli seconds
     }
 
-    startRecording(this.mediaRecorderControls.durationInMs);
+    console.log("rec on" + this.recor)
+    if (this.mediaRecorderControls.recordingOn) {
+      startRecording(this.mediaRecorderControls.durationInMs);
+    }
 
     this.animate();
   }
@@ -526,24 +530,6 @@ class Scene {
     // add the line to the scene
     this.scene.add(line);
   }
-  /*
-  animate() {
-    requestAnimationFrame(this.animate);
-
-    // Calculate the new camera position
-    this.camera.position.x = this.renderControls.cameraRotationRadius
-                             * Math.cos(this.renderControls.cameraAngleAroundOrigin);
-    this.camera.position.z = this.renderControls.cameraRotationRadius
-                             * Math.sin(this.renderControls.cameraAngleAroundOrigin);
-
-    // Ensure the camera still looks at the origin (or any other point of interest)
-    this.camera.lookAt(this.scene.position);
-
-    this.render();
-
-    this.renderControls.cameraAngleAroundOrigin += 0.01;
-  }
-*/
 
   animate() {
     requestAnimationFrame(this.animate);
