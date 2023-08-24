@@ -169,7 +169,7 @@ class Scene {
       }, durationInMs); // stop recording after this many milli seconds
     }
 
-    console.log("rec on" + this.recor)
+    console.log("rec on" + this.recordingOn);
     if (this.mediaRecorderControls.recordingOn) {
       startRecording(this.mediaRecorderControls.durationInMs);
     }

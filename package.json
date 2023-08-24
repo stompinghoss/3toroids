@@ -9,7 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ccapture.js": "^1.1.0",
     "three": "^0.154.0"
   },
   "devDependencies": {
