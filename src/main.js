@@ -47,12 +47,14 @@ class Scene {
       rotationSpeed: 0.01,
     };
 
+    // Uncomment to record and save a video
+    /*
     this.mediaRecorderControls = {
-      recordingOn: true,
       fps: 60,
       durationInMs: 10000,
       options: { mimeType: 'video/webm;codecs=vp9' }, // adjust format as needed
     };
+    */
 
     this.planeSize = 450;
     this.shadowMapFactorOfPlaneSize = 8;
@@ -133,7 +135,9 @@ class Scene {
     this.createToroidLights(this.planeSize, 600, 0xdddddd);
     this.createAmbientLight(0x888888, 1);
 
+    // Uncomment the block below to record and save a video
     // Assuming your Three.js animation is set up and rendering to a canvas
+    /*
     const canvas = document.querySelector('canvas');
     const stream = canvas.captureStream(this.mediaRecorderControls.fps); // fps, adjust as needed
     const mediaRecorder = new MediaRecorder(stream, this.mediaRecorderControls.options);
@@ -168,11 +172,8 @@ class Scene {
         mediaRecorder.stop();
       }, durationInMs); // stop recording after this many milli seconds
     }
-
-    console.log("rec on" + this.recordingOn);
-    if (this.mediaRecorderControls.recordingOn) {
-      startRecording(this.mediaRecorderControls.durationInMs);
-    }
+    startRecording(this.mediaRecorderControls.durationInMs);
+    */
 
     this.animate();
   }
@@ -543,13 +544,13 @@ class Scene {
     this.camera.lookAt(this.scene.position);
 
     // Update rotation angle based on direction
-    this.renderControls.cameraAngleAroundY += this.renderControls.rotationSpeed * 
-                                              this.renderControls.rotationDirection;
+    this.renderControls.cameraAngleAroundY += this.renderControls.rotationSpeed
+                                              * this.renderControls.rotationDirection;
 
     // If it exceeds 90 degrees (in radians) or goes below 0, flip the direction
-    if (this.renderControls.cameraAngleAroundY >= Math.PI / 2 || 
-        this.renderControls.cameraAngleAroundY <= 0) {
-        this.renderControls.rotationDirection *= -1;
+    if (this.renderControls.cameraAngleAroundY >= Math.PI / 2
+        || this.renderControls.cameraAngleAroundY <= 0) {
+      this.renderControls.rotationDirection *= -1;
     }
 
     this.render();
