@@ -25,11 +25,6 @@ module.exports = {
       title: '3 toroids',
       template: './src/index.html', // Path to your template file
     }),
-    new CopyPlugin({
-      patterns: [
-        { from: './assets', to: 'assets' }, // adjust 'src/assets' and 'assets' as needed
-      ],
-    }),
     new LicenseWebpackPlugin({
       // options go here, e.g.:
       perChunkOutput: false, // set this to true if you want one file per chunk
