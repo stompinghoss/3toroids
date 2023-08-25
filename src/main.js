@@ -100,12 +100,12 @@ class Scene {
 
   texturedRender() {
     Promise.all([
-      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Color.jpg'),
-      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Roughness.jpg'),
-      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Metalness.jpg'),
-      this.loadTexture('/assets/DayEnvironmentHDRI033_1K-TONEMAPPED.jpg'),
-      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Displacement.jpg'),
-      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_NormalGL.jpg'),
+      this.loadTexture('https://api.cloudflare.com/client/v4/accounts/5d222924c33825dea655966db24146ff/images/v1/f89e24d7-86e4-4fb7-611b-370f2a7b8700'),
+      this.loadTexture('https://api.cloudflare.com/client/v4/accounts/5d222924c33825dea655966db24146ff/images/v1/2e667327-bb52-45d0-ea32-80d120202b00'),
+      this.loadTexture('https://api.cloudflare.com/client/v4/accounts/5d222924c33825dea655966db24146ff/images/v1/ee7b788b-6f78-4139-d0f9-b0537ed9b800'),
+      this.loadTexture('https://api.cloudflare.com/client/v4/accounts/5d222924c33825dea655966db24146ff/images/v1/af26e13b-572a-4d01-54db-73ab65b2ab00'),
+      this.loadTexture('https://api.cloudflare.com/client/v4/accounts/5d222924c33825dea655966db24146ff/images/v1/925e87b8-9072-4a01-90b6-5c1f5743e600'),
+      this.loadTexture('https://api.cloudflare.com/client/v4/accounts/5d222924c33825dea655966db24146ff/images/v1/95a34c81-49bc-4f47-d161-1febcba07300'),
     ]).then(([map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap]) => {
       const mat = new THREE.MeshStandardMaterial({
         map,
