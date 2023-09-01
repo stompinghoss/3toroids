@@ -1,7 +1,3 @@
-// TODO: Another tidy up. Move all  magic numbers to consts
-// See if I can make the lighting a bit brighter to emphasise the shadows
-// And see if the corner shading can be more interesting.
-
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -11,8 +7,15 @@ import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
+// ES6: import * as Bluebird from 'bluebird';
+var Bluebird = require('bluebird');
+// If you're running this in a browser, you may need to attach Bluebird to the window object
+if (typeof window !== 'undefined') {
+    window.Promise = Bluebird;
+}
 class Scene {
   constructor() {
+    
     // needed to ensure animate is able to be called as a method and not a free function
     this.animate = this.animate.bind(this);
 
@@ -87,46 +90,46 @@ class Scene {
     }
   }
 
-  loadTexture(url) {
-    return new Promise((resolve, reject) => {
-      this.textureLoader.load(
-        url,
-        (texture) => resolve(texture),
-        undefined,
-        (error) => reject(error),
-      );
-    });
-  }
-
-  texturedRender() {
-    Promise.all([
-      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public'),
-      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public'),
-      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public'),
-      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public'),
-      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public'),
-      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public'),
-    ]).then(([map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap]) => {
-      const mat = new THREE.MeshStandardMaterial({
-        map,
-        roughnessMap,
-        metalnessMap,
-        envMap,
-        displacementMap,
-        normalMap,
-        normalScale: new THREE.Vector2(1, 1),
+    loadTexture(url) {
+      return new Promise((resolve, reject) => {
+        this.textureLoader.load(
+          url,
+          (texture) => resolve(texture),
+          undefined,
+          (error) => reject(error),
+        );
       });
+    }
 
-      //  Tweak according to how you want the material to look
-      mat.metalness = this.renderControls.toroidMetalness;
-      mat.roughness = this.renderControls.toroidRoughness;
+    texturedRender() {
+      Promise.all([
+        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public'),
+        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public'),
+        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public'),
+        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public'),
+        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public'),
+        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public'),
+      ]).then(([map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap]) => {
+        const mat = new THREE.MeshStandardMaterial({
+          map,
+          roughnessMap,
+          metalnessMap,
+          envMap,
+          displacementMap,
+          normalMap,
+          normalScale: new THREE.Vector2(1, 1),
+        });
 
-      this.createScene(mat);
-    }).catch((error) => {
-      // eslint-disable-next-line no-console
-      console.error('An error occurred while loading the textures.', error);
-    });
-  }
+        //  Tweak according to how you want the material to look
+        mat.metalness = this.renderControls.toroidMetalness;
+        mat.roughness = this.renderControls.toroidRoughness;
+
+        this.createScene(mat);
+      }).catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error('An error occurred while loading the textures.', error);
+      });
+    }
 
   createScene(toroidMat) {
     this.createAxes();
