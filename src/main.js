@@ -7,15 +7,8 @@ import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
-// ES6: import * as Bluebird from 'bluebird';
-var Bluebird = require('bluebird');
-// If you're running this in a browser, you may need to attach Bluebird to the window object
-if (typeof window !== 'undefined') {
-    window.Promise = Bluebird;
-}
 class Scene {
   constructor() {
-    
     // needed to ensure animate is able to be called as a method and not a free function
     this.animate = this.animate.bind(this);
 
@@ -90,26 +83,29 @@ class Scene {
     }
   }
 
-    loadTexture(url) {
-      return new Promise((resolve, reject) => {
-        this.textureLoader.load(
-          url,
-          (texture) => resolve(texture),
-          undefined,
-          (error) => reject(error),
-        );
-      });
-    }
+  // Promise based version
+  /*
+  loadTexture(url) {
+    return new Promise((resolve, reject) => {
+      this.textureLoader.load(
+        url,
+        (texture) => resolve(texture),
+        undefined,
+        (error) => reject(error),
+      );
+    });
+  }
 
-    texturedRender() {
-      Promise.all([
-        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public'),
-        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public'),
-        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public'),
-        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public'),
-        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public'),
-        this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public'),
-      ]).then(([map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap]) => {
+  texturedRender() {
+    Promise.all([
+      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public'),
+      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public'),
+      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public'),
+      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public'),
+      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public'),
+      this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public'),
+    ]).then(([map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap]) => {
+      try {
         const mat = new THREE.MeshStandardMaterial({
           map,
           roughnessMap,
@@ -125,11 +121,73 @@ class Scene {
         mat.roughness = this.renderControls.toroidRoughness;
 
         this.createScene(mat);
-      }).catch((error) => {
-        // eslint-disable-next-line no-console
-        console.error('An error occurred while loading the textures.', error);
-      });
-    }
+      } catch (error) {
+        console.error('An error occurred while setting up the scene.', error);
+      }
+    }).catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error('An error occurred while loading the textures.', error);
+    });
+  }
+*/
+
+  // Non Promise based texture load
+  loadTexture(url, onSuccess, onFailure) {
+    this.textureLoader.load(
+      url,
+      onSuccess,
+      undefined,
+      onFailure,
+    );
+  }
+
+  texturedRender() {
+    let texturesLoaded = 0;
+    const textures = {};
+
+    const textureNames = [
+      'map', 'roughnessMap', 'metalnessMap', 'envMap', 'displacementMap', 'normalMap',
+    ];
+
+    const urls = [
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public',
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public',
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public',
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public',
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public',
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public',
+      // ... (your other URLs here)
+    ];
+
+    const onTextureLoaded = (name, texture) => {
+      textures[name] = texture;
+      texturesLoaded++;
+
+      if (texturesLoaded === textureNames.length) {
+        try {
+          const mat = new THREE.MeshStandardMaterial({
+            ...textures,
+            normalScale: new THREE.Vector2(1, 1),
+          });
+
+          mat.metalness = this.renderControls.toroidMetalness;
+          mat.roughness = this.renderControls.toroidRoughness;
+
+          this.createScene(mat);
+        } catch (error) {
+          console.error('An error occurred while setting up the scene.', error);
+        }
+      }
+    };
+
+    const onTextureLoadFailure = (error) => {
+      console.error('An error occurred while loading the textures.', error);
+    };
+
+    textureNames.forEach((name, index) => {
+      this.loadTexture(urls[index], (texture) => onTextureLoaded(name, texture), onTextureLoadFailure);
+    });
+  }
 
   createScene(toroidMat) {
     this.createAxes();
