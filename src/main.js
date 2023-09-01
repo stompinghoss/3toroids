@@ -161,7 +161,7 @@ class Scene {
 
     const onTextureLoaded = (name, texture) => {
       textures[name] = texture;
-      texturesLoaded++;
+      texturesLoaded += 1;
 
       if (texturesLoaded === textureNames.length) {
         try {
@@ -184,9 +184,18 @@ class Scene {
       console.error('An error occurred while loading the textures.', error);
     };
 
+    console.log('About to load textures');
+
     textureNames.forEach((name, index) => {
-      this.loadTexture(urls[index], (texture) => onTextureLoaded(name, texture), onTextureLoadFailure);
+      console.log(`Loading texture ${name}`);
+      this.loadTexture(
+        urls[index],
+        (texture) => onTextureLoaded(name, texture),
+        onTextureLoadFailure,
+      );
     });
+
+    console.log('Textures loaded');
   }
 
   createScene(toroidMat) {
