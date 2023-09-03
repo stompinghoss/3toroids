@@ -83,8 +83,8 @@ class Scene {
     }
   }
 
-  // Promise based version
-  
+  // Promise based version that doesn't use Promise.all for parallel load
+
   loadTexture(url) {
     return new Promise((resolve, reject) => {
       this.textureLoader.load(
@@ -97,7 +97,64 @@ class Scene {
   }
 
   texturedRender() {
-    console.log('About to do textureed render.');
+    const textures = [
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public',
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public',
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public',
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public',
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public',
+      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public',
+    ];
+
+    const promises = textures.map((url) => Promise.resolve(this.loadTexture(url)));
+    const results = Promise.all(promises);
+
+    results.then((textures) => {
+      try {
+        const map = textures[0];
+        const roughnessMap = textures[1];
+        const metalnessMap = textures[2];
+        const envMap = textures[3];
+        const displacementMap = textures[4];
+        const normalMap = textures[5];
+        const mat = new THREE.MeshStandardMaterial({
+          map,
+          roughnessMap,
+          metalnessMap,
+          envMap,
+          displacementMap,
+          normalMap,
+          normalScale: new THREE.Vector2(1, 1),
+        });
+
+        //  Tweak according to how you want the material to look
+        mat.metalness = this.renderControls.toroidMetalness;
+        mat.roughness = this.renderControls.toroidRoughness;
+
+        this.createScene(mat);
+      } catch (error) {
+        console.error('An error occurred while setting up the scene.', error);
+      }
+    }).catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error('An error occurred while loading the textures.', error);
+    });
+  }
+
+  // Promise based version with Promise.all which tries to load things in parallel, but doesn't work on iOS Brave or Safari
+  /*
+  loadTexture(url) {
+    return new Promise((resolve, reject) => {
+      this.textureLoader.load(
+        url,
+        (texture) => resolve(texture),
+        undefined,
+        (error) => reject(error),
+      );
+    });
+  }
+
+  texturedRender() {
     Promise.all([
       this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public'),
       this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public'),
@@ -130,8 +187,9 @@ class Scene {
       console.error('An error occurred while loading the textures.', error);
     });
   }
+  */
 
-  // Non Promise based texture load
+  // Non Promise based texture load - but has some injection issues that eslint compat is not happy about
   /*
   loadTexture(url, onSuccess, onFailure) {
     this.textureLoader.load(
@@ -201,7 +259,6 @@ class Scene {
 */
 
   createScene(toroidMat) {
-    console.log  ('About to createScene');
     this.createAxes();
     this.createToroids(toroidMat);
     this.createPlanes();
@@ -459,7 +516,7 @@ class Scene {
         break;
       default:
         // eslint-disable-next-line no-console
-        console.log('Fatal error, should have thrown if no plane details.');
+        console.error('Fatal error, should have thrown if no plane details.');
     }
 
     geo.setAttribute('color', new THREE.Float32BufferAttribute(Scene.createPlaneShading(fromCol, toCol, geo, planeSize, orientation), 3));
@@ -606,7 +663,6 @@ class Scene {
   }
 
   animate() {
-    console.log('animate()');
     requestAnimationFrame(this.animate);
 
     const r = this.renderControls.cameraRotationRadius;

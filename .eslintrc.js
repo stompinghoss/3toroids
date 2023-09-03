@@ -10,7 +10,7 @@ module.exports = {
       version: '999.999.999', // Override with a dummy version
     },
   },
-  plugins: ['security'],
+  plugins: ['security','compat'],
   overrides: [
     {
       env: {
@@ -36,5 +36,6 @@ module.exports = {
     'security/detect-non-literal-fs-filename': 'error',
     'security/detect-object-injection': 'error',
     'security/detect-unsafe-regex': 'error',
+    'compat/compat': 'error',
   },
 };
