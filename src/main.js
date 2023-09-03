@@ -84,7 +84,7 @@ class Scene {
   }
 
   // Promise based version
-  /*
+  
   loadTexture(url) {
     return new Promise((resolve, reject) => {
       this.textureLoader.load(
@@ -97,6 +97,7 @@ class Scene {
   }
 
   texturedRender() {
+    console.log('About to do textureed render.');
     Promise.all([
       this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public'),
       this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public'),
@@ -129,9 +130,9 @@ class Scene {
       console.error('An error occurred while loading the textures.', error);
     });
   }
-*/
 
   // Non Promise based texture load
+  /*
   loadTexture(url, onSuccess, onFailure) {
     this.textureLoader.load(
       url,
@@ -197,8 +198,10 @@ class Scene {
 
     console.log('Textures loaded');
   }
+*/
 
   createScene(toroidMat) {
+    console.log  ('About to createScene');
     this.createAxes();
     this.createToroids(toroidMat);
     this.createPlanes();
@@ -603,6 +606,7 @@ class Scene {
   }
 
   animate() {
+    console.log('animate()');
     requestAnimationFrame(this.animate);
 
     const r = this.renderControls.cameraRotationRadius;
