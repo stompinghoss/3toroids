@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Promise.all Example</title>
+</head>
+<body>
+
+<script>
+  // Simulate an asynchronous task
+  function asyncTask(message, delay) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log(message);
+        resolve(message);
+      }, delay);
+    });
+  }
+
+  // Execute multiple promises in parallel
+  Promise.all([
+    asyncTask('Message 1', 2000), // 2-second delay
+    asyncTask('Message 2', 1000), // 1-second delay
+    asyncTask('Message 3', 3000)  // 3-second delay
+  ]).then((results) => {
+    // This block will run once all promises have been resolved
+    console.log('All messages have been printed:', results);
+  }).catch((error) => {
+    // This block will run if any of the promises are rejected
+    console.error('An error occurred:', error);
+  });
+</script>
+
+</body>
+</html>
