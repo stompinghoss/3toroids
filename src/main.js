@@ -83,7 +83,87 @@ class Scene {
     }
   }
 
+  // CGPT version using call backs
+  // Callback-based loadTexture method
+  loadTexture(url, onSuccess, onError) {
+    this.textureLoader.load(
+      url,
+      (texture) => {
+        if (onSuccess) {
+          onSuccess(texture);
+        }
+      },
+      undefined,
+      (error) => {
+        if (onError) {
+          onError(error);
+        }
+      }
+    );
+  }
+
+  // Callback-based texturedRender method
+  texturedRender() {
+    let textures = {};
+    let errors = [];
+    let remainingTextures = 6; // Count of textures to load
+
+    const loadAndProceed = (key, url) => {
+      this.loadTexture(url, (texture) => {
+        textures[key] = texture;
+        remainingTextures--;
+        if (remainingTextures === 0) {
+          proceed();
+        }
+      }, (error) => {
+        errors.push(error);
+        remainingTextures--;
+        if (remainingTextures === 0) {
+          proceed();
+        }
+      });
+    };
+
+    const proceed = () => {
+      if (errors.length > 0) {
+        console.error('An error occurred while loading the textures.', errors);
+        return;
+      }
+
+      try {
+        const mat = new THREE.MeshStandardMaterial({
+          map: textures.map,
+          roughnessMap: textures.roughnessMap,
+          metalnessMap: textures.metalnessMap,
+          envMap: textures.envMap,
+          displacementMap: textures.displacementMap,
+          normalMap: textures.normalMap,
+          normalScale: new THREE.Vector2(1, 1),
+        });
+
+        // Tweak according to how you want the material to look
+        mat.metalness = this.renderControls.toroidMetalness;
+        mat.roughness = this.renderControls.toroidRoughness;
+
+        this.createScene(mat);
+      } catch (error) {
+        console.error('An error occurred while setting up the scene.', error);
+      }
+    };
+
+    loadAndProceed('map', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public');
+    loadAndProceed('roughnessMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public');
+    loadAndProceed('metalnessMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public');
+    loadAndProceed('envMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public');
+    loadAndProceed('displacementMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public');
+    loadAndProceed('normalMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public');
+  }
+
+
+
+
   // CGPT version that's meant to load 1 by 1
+  /*
   loadTexture(url) {
     return new Promise((resolve, reject) => {
       this.textureLoader.load(
@@ -94,7 +174,7 @@ class Scene {
       );
     });
   }
-  
+
   async texturedRender() {
     try {
       const urls = [
@@ -103,7 +183,7 @@ class Scene {
         'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public',
         'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public',
         'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public',
-        'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public'
+        'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public',
       ];
 
       const loadedTextures = [];
@@ -134,9 +214,8 @@ class Scene {
       // eslint-disable-next-line no-console
       console.error('An error occurred.', error);
     }
-}
-
-
+  }
+  */
 
   // Bard's version of a Promise based version that doesn't use Promise.all for parallel load
   /* 
