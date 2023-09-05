@@ -30,5 +30,11 @@ module.exports = {
       perChunkOutput: false, // set this to true if you want one file per chunk
       outputFilename: '[name].licenses.txt',
     }),
+    new CopyPlugin({
+      patterns: [
+        { from: './assets', to: './assets' },
+    ],
+  }),
+
   ],
 };
