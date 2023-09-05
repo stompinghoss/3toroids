@@ -22,8 +22,8 @@ class Scene {
       axesOn: false,
       antiAliasing: false, // FXAA pass - Doesn't do what was intended but left in to show it
       shadowPass: false, // Doesn't do what was intended but left in to show it
-      shadowsOn: true,
-      texturesOn: true,
+      shadowsOn: false,
+      texturesOn: false,
       toneMapping: true,
       bloom: false,
       diagOn: false,
@@ -53,7 +53,7 @@ class Scene {
     */
 
     this.planeSize = 450;
-    this.shadowMapFactorOfPlaneSize = 16;
+    this.shadowMapFactorOfPlaneSize = 32;
     this.videoLength = 10000; // ms
     this.cameraPos = new THREE.Vector3(100, 100, 700); // Tweak as appropriate for the scene
     this.cameraLookAt = new THREE.Vector3(0, 0, 0); // Look at the origin
