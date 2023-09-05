@@ -107,12 +107,12 @@ class Scene {
       this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public'),
       */
 
-      this.loadTexture('../dist/assets/Metal041B_1K-JPG/Metal041B_1K_Color.jpg'),
-      this.loadTexture('../dist/assets/Metal041B_1K-JPG/Metal041B_1K_Roughness.jpg'),
-      this.loadTexture('../dist/assets/Metal041B_1K-JPG/Metal041B_1K_Metalness.jpg'),
-      this.loadTexture('../dist/assets/DayEnvironmentHDRI033_1K-TONEMAPPED.jpg'),
-      this.loadTexture('../dist/assets/Metal041B_1K-JPG/Metal041B_1K_Displacement.jpg'),
-      this.loadTexture('../dist/assets/Metal041B_1K-JPG/Metal041B_1K_NormalGL.jpg'),
+      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Color.jpg'),
+      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Roughness.jpg'),
+      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Metalness.jpg'),
+      this.loadTexture('/assets/DayEnvironmentHDRI033_1K-TONEMAPPED.jpg'),
+      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Displacement.jpg'),
+      this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_NormalGL.jpg'),
     ]).then(([map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap]) => {
       try {
         const mat = new THREE.MeshStandardMaterial({
