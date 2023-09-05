@@ -83,209 +83,8 @@ class Scene {
     }
   }
 
-  // CGPT version using call backs
-  // Callback-based loadTexture method
-  loadTexture(url, onSuccess, onError) {
-    this.textureLoader.load(
-      url,
-      (texture) => {
-        if (onSuccess) {
-          onSuccess(texture);
-        }
-      },
-      undefined,
-      (error) => {
-        if (onError) {
-          onError(error);
-        }
-      }
-    );
-  }
-
-  // Callback-based texturedRender method
-  texturedRender() {
-    let textures = {};
-    let errors = [];
-    let remainingTextures = 6; // Count of textures to load
-
-    const loadAndProceed = (key, url) => {
-      this.loadTexture(url, (texture) => {
-        textures[key] = texture;
-        remainingTextures--;
-        if (remainingTextures === 0) {
-          proceed();
-        }
-      }, (error) => {
-        errors.push(error);
-        remainingTextures--;
-        if (remainingTextures === 0) {
-          proceed();
-        }
-      });
-    };
-
-    const proceed = () => {
-      if (errors.length > 0) {
-        console.error('An error occurred while loading the textures.', errors);
-        return;
-      }
-
-      try {
-        const mat = new THREE.MeshStandardMaterial({
-          map: textures.map,
-          roughnessMap: textures.roughnessMap,
-          metalnessMap: textures.metalnessMap,
-          envMap: textures.envMap,
-          displacementMap: textures.displacementMap,
-          normalMap: textures.normalMap,
-          normalScale: new THREE.Vector2(1, 1),
-        });
-
-        // Tweak according to how you want the material to look
-        mat.metalness = this.renderControls.toroidMetalness;
-        mat.roughness = this.renderControls.toroidRoughness;
-
-        this.createScene(mat);
-      } catch (error) {
-        console.error('An error occurred while setting up the scene.', error);
-      }
-    };
-    
-    // CDN version
-    /*
-    loadAndProceed('map', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public');
-    loadAndProceed('roughnessMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public');
-    loadAndProceed('metalnessMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public');
-    loadAndProceed('envMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public');
-    loadAndProceed('displacementMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public');
-    loadAndProceed('normalMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public');
-    */
-
-    loadAndProceed('map', '/assets/Metal041B_1K-JPG/Metal041B_1K_Color.jpg');
-    loadAndProceed('roughnessMap', '/assets/Metal041B_1K-JPG/Metal041B_1K_Roughness.jpg');
-    loadAndProceed('metalnessMap', '/assets/Metal041B_1K-JPG/Metal041B_1K_Metalness.jpg');
-    loadAndProceed('envMap', '/assets/DayEnvironmentHDRI033_1K-TONEMAPPED.jpg');
-    loadAndProceed('displacementMap', '/assets/Metal041B_1K-JPG/Metal041B_1K_Displacement.jpg');
-    loadAndProceed('normalMap', '/assets/Metal041B_1K-JPG/Metal041B_1K_NormalGL.jpg');
-
-  }
-
-  // CGPT version that's meant to load 1 by 1
-  /*
-  loadTexture(url) {
-    return new Promise((resolve, reject) => {
-      this.textureLoader.load(
-        url,
-        (texture) => resolve(texture),
-        undefined,
-        (error) => reject(error),
-      );
-    });
-  }
-
-  async texturedRender() {
-    try {
-      const urls = [
-        'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public',
-        'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public',
-        'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public',
-        'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public',
-        'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public',
-        'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public',
-      ];
-
-      const loadedTextures = [];
-
-      for (const url of urls) {
-        const texture = await this.loadTexture(url);
-        loadedTextures.push(texture);
-      }
-
-      const [map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap] = loadedTextures;
-
-      const mat = new THREE.MeshStandardMaterial({
-        map,
-        roughnessMap,
-        metalnessMap,
-        envMap,
-        displacementMap,
-        normalMap,
-        normalScale: new THREE.Vector2(1, 1),
-      });
-
-      // Tweak according to how you want the material to look
-      mat.metalness = this.renderControls.toroidMetalness;
-      mat.roughness = this.renderControls.toroidRoughness;
-
-      this.createScene(mat);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('An error occurred.', error);
-    }
-  }
-  */
-
-  // Bard's version of a Promise based version that doesn't use Promise.all for parallel load
-  /* 
-  loadTexture(url) {
-    return new Promise((resolve, reject) => {
-      this.textureLoader.load(
-        url,
-        (texture) => resolve(texture),
-        undefined,
-        (error) => reject(error),
-      );
-    });
-  }
-
-  texturedRender() {
-    const textures = [
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public',
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public',
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public',
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public',
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public',
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public',
-    ];
-
-    const promises = textures.map((url) => Promise.resolve(this.loadTexture(url)));
-    const results = Promise.all(promises);
-
-    results.then((textures) => {
-      try {
-        const map = textures[0];
-        const roughnessMap = textures[1];
-        const metalnessMap = textures[2];
-        const envMap = textures[3];
-        const displacementMap = textures[4];
-        const normalMap = textures[5];
-        const mat = new THREE.MeshStandardMaterial({
-          map,
-          roughnessMap,
-          metalnessMap,
-          envMap,
-          displacementMap,
-          normalMap,
-          normalScale: new THREE.Vector2(1, 1),
-        });
-
-        //  Tweak according to how you want the material to look
-        mat.metalness = this.renderControls.toroidMetalness;
-        mat.roughness = this.renderControls.toroidRoughness;
-
-        this.createScene(mat);
-      } catch (error) {
-        console.error('An error occurred while setting up the scene.', error);
-      }
-    }).catch((error) => {
-      // eslint-disable-next-line no-console
-      console.error('An error occurred while loading the textures.', error);
-    });
-  }
-  */
-
   // CGPT4 version of Promise based version with Promise.all which tries to load things in parallel, but doesn't work on iOS Brave or Safari
-  /*
+
   loadTexture(url) {
     return new Promise((resolve, reject) => {
       this.textureLoader.load(
@@ -299,12 +98,21 @@ class Scene {
 
   texturedRender() {
     Promise.all([
+      /*
       this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public'),
       this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public'),
       this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public'),
       this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public'),
       this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public'),
       this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public'),
+      */
+
+      this.loadTexture('../dist/assets/Metal041B_1K-JPG/Metal041B_1K_Color.jpg'),
+      this.loadTexture('../dist/assets/Metal041B_1K-JPG/Metal041B_1K_Roughness.jpg'),
+      this.loadTexture('../dist/assets/Metal041B_1K-JPG/Metal041B_1K_Metalness.jpg'),
+      this.loadTexture('../dist/assets/DayEnvironmentHDRI033_1K-TONEMAPPED.jpg'),
+      this.loadTexture('../dist/assets/Metal041B_1K-JPG/Metal041B_1K_Displacement.jpg'),
+      this.loadTexture('../dist/assets/Metal041B_1K-JPG/Metal041B_1K_NormalGL.jpg'),
     ]).then(([map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap]) => {
       try {
         const mat = new THREE.MeshStandardMaterial({
@@ -330,76 +138,6 @@ class Scene {
       console.error('An error occurred while loading the textures.', error);
     });
   }
-  */
-
-  // Non Promise based texture load - but has some injection issues that eslint compat is not happy about
-  /*
-  loadTexture(url, onSuccess, onFailure) {
-    this.textureLoader.load(
-      url,
-      onSuccess,
-      undefined,
-      onFailure,
-    );
-  }
-
-  texturedRender() {
-    let texturesLoaded = 0;
-    const textures = {};
-
-    const textureNames = [
-      'map', 'roughnessMap', 'metalnessMap', 'envMap', 'displacementMap', 'normalMap',
-    ];
-
-    const urls = [
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public',
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public',
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public',
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public',
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public',
-      'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public',
-      // ... (your other URLs here)
-    ];
-
-    const onTextureLoaded = (name, texture) => {
-      textures[name] = texture;
-      texturesLoaded += 1;
-
-      if (texturesLoaded === textureNames.length) {
-        try {
-          const mat = new THREE.MeshStandardMaterial({
-            ...textures,
-            normalScale: new THREE.Vector2(1, 1),
-          });
-
-          mat.metalness = this.renderControls.toroidMetalness;
-          mat.roughness = this.renderControls.toroidRoughness;
-
-          this.createScene(mat);
-        } catch (error) {
-          console.error('An error occurred while setting up the scene.', error);
-        }
-      }
-    };
-
-    const onTextureLoadFailure = (error) => {
-      console.error('An error occurred while loading the textures.', error);
-    };
-
-    console.log('About to load textures');
-
-    textureNames.forEach((name, index) => {
-      console.log(`Loading texture ${name}`);
-      this.loadTexture(
-        urls[index],
-        (texture) => onTextureLoaded(name, texture),
-        onTextureLoadFailure,
-      );
-    });
-
-    console.log('Textures loaded');
-  }
-*/
 
   createScene(toroidMat) {
     this.createAxes();
