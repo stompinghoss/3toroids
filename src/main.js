@@ -150,17 +150,25 @@ class Scene {
         console.error('An error occurred while setting up the scene.', error);
       }
     };
-
+    
+    // CDN version
+    /*
     loadAndProceed('map', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public');
     loadAndProceed('roughnessMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public');
     loadAndProceed('metalnessMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public');
     loadAndProceed('envMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public');
     loadAndProceed('displacementMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public');
     loadAndProceed('normalMap', 'https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public');
+    */
+
+    loadAndProceed('map', '/assets/Metal041B_1K-JPG/Metal041B_1K_Color.jpg');
+    loadAndProceed('roughnessMap', '/assets/Metal041B_1K-JPG/Metal041B_1K_Roughness.jpg');
+    loadAndProceed('metalnessMap', '/assets/Metal041B_1K-JPG/Metal041B_1K_Metalness.jpg');
+    loadAndProceed('envMap', '/assets/DayEnvironmentHDRI033_1K-TONEMAPPED.jpg');
+    loadAndProceed('displacementMap', '/assets/Metal041B_1K-JPG/Metal041B_1K_Displacement.jpg');
+    loadAndProceed('normalMap', '/assets/Metal041B_1K-JPG/Metal041B_1K_NormalGL.jpg');
+
   }
-
-
-
 
   // CGPT version that's meant to load 1 by 1
   /*
