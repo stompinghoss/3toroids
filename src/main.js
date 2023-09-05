@@ -611,6 +611,7 @@ texturedRender() {
   }
 
   animate() {
+    console.log ('animate');
     requestAnimationFrame(this.animate);
 
     const r = this.renderControls.cameraRotationRadius;
