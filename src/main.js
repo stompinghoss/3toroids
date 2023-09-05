@@ -85,69 +85,68 @@ class Scene {
 
   // CGPT non promise version
   loadTexture(url, onSuccess, onError) {
-  this.textureLoader.load(
-    url,
-    (texture) => {
-      onSuccess(texture);
-    },
-    undefined,
-    (error) => {
-      onError(error);
-    }
-  );
-}
-
-texturedRender() {
-  let texturesLoaded = 0;
-  let totalTextures = 6; // Total number of textures to load
-  let textureData = [];
-
-  const onSuccess = (texture, index) => {
-    textureData[index] = texture;
-    texturesLoaded++;
-
-    if (texturesLoaded === totalTextures) {
-      try {
-        const [map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap] = textureData;
-
-        const mat = new THREE.MeshStandardMaterial({
-          map,
-          roughnessMap,
-          metalnessMap,
-          envMap,
-          displacementMap,
-          normalMap,
-          normalScale: new THREE.Vector2(1, 1),
-        });
-
-        mat.metalness = this.renderControls.toroidMetalness;
-        mat.roughness = this.renderControls.toroidRoughness;
-
-        this.createScene(mat);
-      } catch (error) {
-        console.error('An error occurred while setting up the scene.', error);
-      }
-    }
-  };
-
-  const onError = (error) => {
-    console.error('An error occurred while loading the textures.', error);
-  };
-
-  const textureUrls = [
-    '/assets/Metal041B_1K-JPG/Metal041B_1K_Color.jpg',
-    '/assets/Metal041B_1K-JPG/Metal041B_1K_Roughness.jpg',
-    '/assets/Metal041B_1K-JPG/Metal041B_1K_Metalness.jpg',
-    '/assets/DayEnvironmentHDRI033_1K-TONEMAPPED.jpg',
-    '/assets/Metal041B_1K-JPG/Metal041B_1K_Displacement.jpg',
-    '/assets/Metal041B_1K-JPG/Metal041B_1K_NormalGL.jpg',
-  ];
-
-  for (let i = 0; i < textureUrls.length; i++) {
-    this.loadTexture(textureUrls[i], (texture) => onSuccess(texture, i), onError);
+    this.textureLoader.load(
+      url,
+      (texture) => {
+        onSuccess(texture);
+      },
+      undefined,
+      (error) => {
+        onError(error);
+      },
+    );
   }
-}
 
+  texturedRender() {
+    let texturesLoaded = 0;
+    const totalTextures = 6; // Total number of textures to load
+    const textureData = [];
+
+    const onSuccess = (texture, index) => {
+      textureData[index] = texture;
+      texturesLoaded++;
+
+      if (texturesLoaded === totalTextures) {
+        try {
+          const [map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap] = textureData;
+
+          const mat = new THREE.MeshStandardMaterial({
+            map,
+            roughnessMap,
+            metalnessMap,
+            envMap,
+            displacementMap,
+            normalMap,
+            normalScale: new THREE.Vector2(1, 1),
+          });
+
+          mat.metalness = this.renderControls.toroidMetalness;
+          mat.roughness = this.renderControls.toroidRoughness;
+
+          this.createScene(mat);
+        } catch (error) {
+          console.error('An error occurred while setting up the scene.', error);
+        }
+      }
+    };
+
+    const onError = (error) => {
+      console.error('An error occurred while loading the textures.', error);
+    };
+
+    const textureUrls = [
+      '/assets/Metal041B_1K-JPG/Metal041B_1K_Color.jpg',
+      '/assets/Metal041B_1K-JPG/Metal041B_1K_Roughness.jpg',
+      '/assets/Metal041B_1K-JPG/Metal041B_1K_Metalness.jpg',
+      '/assets/DayEnvironmentHDRI033_1K-TONEMAPPED.jpg',
+      '/assets/Metal041B_1K-JPG/Metal041B_1K_Displacement.jpg',
+      '/assets/Metal041B_1K-JPG/Metal041B_1K_NormalGL.jpg',
+    ];
+
+    for (let i = 0; i < textureUrls.length; i++) {
+      this.loadTexture(textureUrls[i], (texture) => onSuccess(texture, i), onError);
+    }
+  }
 
   // CGPT4 version of Promise based version with Promise.all which tries to load things in parallel, but doesn't work on iOS Brave or Safari
   /*
@@ -164,14 +163,13 @@ texturedRender() {
 
   texturedRender() {
     Promise.all([
-      
+
       //this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/f89e24d7-86e4-4fb7-611b-370f2a7b8700/public'),
       //this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/2e667327-bb52-45d0-ea32-80d120202b00/public'),
       //this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/ee7b788b-6f78-4139-d0f9-b0537ed9b800/public'),
       //this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/af26e13b-572a-4d01-54db-73ab65b2ab00/public'),
       //this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/925e87b8-9072-4a01-90b6-5c1f5743e600/public'),
       //this.loadTexture('https://imagedelivery.net/thLe7qDiXvQeQgxH4hBUmg/95a34c81-49bc-4f47-d161-1febcba07300/public'),
-      
 
       this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Color.jpg'),
       this.loadTexture('/assets/Metal041B_1K-JPG/Metal041B_1K_Roughness.jpg'),
@@ -611,7 +609,7 @@ texturedRender() {
   }
 
   animate() {
-    console.log ('animate');
+    console.log('animate');
     requestAnimationFrame(this.animate);
 
     const r = this.renderControls.cameraRotationRadius;
