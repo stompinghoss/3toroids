@@ -23,7 +23,7 @@ class Scene {
       antiAliasing: false, // FXAA pass - Doesn't do what was intended but left in to show it
       shadowPass: false, // Doesn't do what was intended but left in to show it
       shadowsOn: true,
-      texturesOn: true,
+      texturesOn: false,
       toneMapping: true,
       bloom: false,
       diagOn: false,
@@ -609,7 +609,6 @@ class Scene {
   }
 
   animate() {
-    console.log('animate');
     requestAnimationFrame(this.animate);
 
     const r = this.renderControls.cameraRotationRadius;
