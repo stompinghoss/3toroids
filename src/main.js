@@ -53,7 +53,7 @@ class Scene {
     */
 
     this.planeSize = 450;
-    this.shadowMapFactorOfPlaneSize = 32;
+    this.shadowMapFactorOfPlaneSize = 4;
     this.videoLength = 10000; // ms
     this.cameraPos = new THREE.Vector3(100, 100, 700); // Tweak as appropriate for the scene
     this.cameraLookAt = new THREE.Vector3(0, 0, 0); // Look at the origin
@@ -67,7 +67,7 @@ class Scene {
     this.rotationIncrement = 0.01;
     this.controls.update();
 
-    console.log ('Main constructor work done');
+    console.log('Main constructor work done');
 
     if (this.renderControls.texturesOn) {
       this.texturedRender();
@@ -156,9 +156,9 @@ class Scene {
     }
   }
 */
-  
+
   // CGPT4 version of Promise based version with Promise.all which tries to load things in parallel, but doesn't work on iOS Brave or Safari
-  
+
   loadTexture(url) {
     return new Promise((resolve, reject) => {
       this.textureLoader.load(
@@ -214,8 +214,7 @@ class Scene {
   }
 
   createScene(toroidMat) {
-
-    console.log ('Create scene');
+    console.log('Create scene');
 
     this.createAxes();
     this.createToroids(toroidMat);
@@ -267,8 +266,7 @@ class Scene {
   }
 
   static createAndSetupCamera(pos, look) {
-
-    console.log ('Setup camera.');
+    console.log('Setup camera.');
 
     // Create camera
     const camera = new THREE.PerspectiveCamera(
@@ -283,8 +281,7 @@ class Scene {
   }
 
   createAndSetupRenderer() {
-
-    console.log ('Setup renderer.');
+    console.log('Setup renderer.');
 
     // Create renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -310,8 +307,7 @@ class Scene {
   }
 
   createAndSetupComposer(camera, renderer) {
-
-    console.log ('Setup composer');
+    console.log('Setup composer');
 
     // Create the post-processing composer
     const composer = new EffectComposer(renderer);
@@ -353,8 +349,7 @@ class Scene {
   }
 
   createToroids(material) {
-
-    console.log ('Setup toroids');
+    console.log('Setup toroids');
 
     if (this.renderControls.toroidsOn) {
       // Create geometry
@@ -435,7 +430,7 @@ class Scene {
       throw new Error('Unspecified plane. Cannot setup a plane without details, e.g. xz, xy or yz.');
     }
 
-    console.log ('Setup planes');
+    console.log('Setup planes');
 
     const geo = new THREE.PlaneGeometry(
       planeSize,
@@ -499,8 +494,7 @@ class Scene {
   }
 
   static createPlaneShading(viewerCol, horizonCol, geometry, planeSize, orientation) {
-
-    console.log ('Plane shading.');
+    console.log('Plane shading.');
 
     // Calculate colors for the plane vertices
     const planeColors = [];
@@ -534,25 +528,29 @@ class Scene {
     shadowCamNear = 20,
     shadowCamFar = 1000,
   ) {
-    // args are colour, intensity, distance and decay
-    const light = new THREE.PointLight(colour, intensity, lightDistance);
-    light.position.copy(pos);
-    if (this.renderControls.shadowsOn) {
-      light.castShadow = true;
-    }
-    this.scene.add(light);
+    console.log('Create light');
+    try {
+      // args are colour, intensity, distance and decay
+      const light = new THREE.PointLight(colour, intensity, lightDistance);
+      light.position.copy(pos);
+      if (this.renderControls.shadowsOn) {
+        light.castShadow = true;
+      }
+      this.scene.add(light);
 
-    if (this.renderControls.shadowsOn) {
-      light.shadow.mapSize.width = receivingSurfaceSize * this.shadowMapFactorOfPlaneSize;
-      light.shadow.mapSize.height = receivingSurfaceSize * this.shadowMapFactorOfPlaneSize;
-      light.shadow.camera.near = shadowCamNear;
-      light.shadow.camera.far = shadowCamFar;
+      if (this.renderControls.shadowsOn) {
+        light.shadow.mapSize.width = receivingSurfaceSize * this.shadowMapFactorOfPlaneSize;
+        light.shadow.mapSize.height = receivingSurfaceSize * this.shadowMapFactorOfPlaneSize;
+        light.shadow.camera.near = shadowCamNear;
+        light.shadow.camera.far = shadowCamFar;
+      }
+    } catch (error) {
+      console.error('Error creting light: ', error);
     }
   }
 
   createToroidLights(receivingSurfaceSize, lightOffsetFromReceivingSurface, lightColour) {
-    
-    console.log ('Create lights');
+    console.log('Create toroid lights.');
 
     const lightDistance = receivingSurfaceSize + lightOffsetFromReceivingSurface;
     const halfReceivingSurfaceSize = receivingSurfaceSize / 2;
@@ -643,7 +641,7 @@ class Scene {
   }
 
   animate() {
-    //console.log ('Animate');
+    // console.log ('Animate');
 
     requestAnimationFrame(this.animate);
 
