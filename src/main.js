@@ -22,8 +22,8 @@ class Scene {
       axesOn: false,
       antiAliasing: false, // FXAA pass - Doesn't do what was intended but left in to show it
       shadowPass: false, // Doesn't do what was intended but left in to show it
-      shadowsOn: false,
-      texturesOn: false,
+      shadowsOn: true,
+      texturesOn: true,
       toneMapping: true,
       bloom: false,
       diagOn: false,
@@ -67,6 +67,8 @@ class Scene {
     this.rotationIncrement = 0.01;
     this.controls.update();
 
+    console.log ('Main constructor work done');
+
     if (this.renderControls.texturesOn) {
       this.texturedRender();
     } else {
@@ -98,6 +100,9 @@ class Scene {
   }
 
   texturedRender() {
+
+    console.log('Doing textured render.');
+
     let texturesLoaded = 0;
     const totalTextures = 6; // Total number of textures to load
     const textureData = [];
@@ -109,6 +114,8 @@ class Scene {
       if (texturesLoaded === totalTextures) {
         try {
           const [map, roughnessMap, metalnessMap, envMap, displacementMap, normalMap] = textureData;
+
+          console.log ('Loaded textures');
 
           const mat = new THREE.MeshStandardMaterial({
             map,
@@ -205,6 +212,9 @@ class Scene {
   */
 
   createScene(toroidMat) {
+
+    console.log ('Create scene');
+
     this.createAxes();
     this.createToroids(toroidMat);
     this.createPlanes();
@@ -255,6 +265,9 @@ class Scene {
   }
 
   static createAndSetupCamera(pos, look) {
+
+    console.log ('Setup camera.');
+
     // Create camera
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -268,6 +281,9 @@ class Scene {
   }
 
   createAndSetupRenderer() {
+
+    console.log ('Setup renderer.');
+
     // Create renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     const width = 1920; // e.g., Full HD width
@@ -292,6 +308,9 @@ class Scene {
   }
 
   createAndSetupComposer(camera, renderer) {
+
+    console.log ('Setup composer');
+
     // Create the post-processing composer
     const composer = new EffectComposer(renderer);
 
@@ -332,12 +351,15 @@ class Scene {
   }
 
   createToroids(material) {
+
+    console.log ('Setup toroids');
+
     if (this.renderControls.toroidsOn) {
       // Create geometry
       const toroidRadius = 100;
       const tubeRadius = 10;
-      const radialSegments = 64;
-      const toroidSegments = 64;
+      const radialSegments = 32;
+      const toroidSegments = 32;
       const offset = 0;
       const toroidGeometry1 = new THREE.TorusGeometry(
         toroidRadius,
@@ -411,6 +433,8 @@ class Scene {
       throw new Error('Unspecified plane. Cannot setup a plane without details, e.g. xz, xy or yz.');
     }
 
+    console.log ('Setup planes');
+
     const geo = new THREE.PlaneGeometry(
       planeSize,
       planeSize,
@@ -473,6 +497,9 @@ class Scene {
   }
 
   static createPlaneShading(viewerCol, horizonCol, geometry, planeSize, orientation) {
+
+    console.log ('Plane shading.');
+
     // Calculate colors for the plane vertices
     const planeColors = [];
     const viewerColor = new THREE.Color(viewerCol);
@@ -508,7 +535,9 @@ class Scene {
     // args are colour, intensity, distance and decay
     const light = new THREE.PointLight(colour, intensity, lightDistance);
     light.position.copy(pos);
-    light.castShadow = true;
+    if (this.renderControls.shadowsOn) {
+      light.castShadow = true;
+    }
     this.scene.add(light);
 
     if (this.renderControls.shadowsOn) {
@@ -520,6 +549,9 @@ class Scene {
   }
 
   createToroidLights(receivingSurfaceSize, lightOffsetFromReceivingSurface, lightColour) {
+    
+    console.log ('Create lights');
+
     const lightDistance = receivingSurfaceSize + lightOffsetFromReceivingSurface;
     const halfReceivingSurfaceSize = receivingSurfaceSize / 2;
 
@@ -609,6 +641,8 @@ class Scene {
   }
 
   animate() {
+    //console.log ('Animate');
+
     requestAnimationFrame(this.animate);
 
     const r = this.renderControls.cameraRotationRadius;
