@@ -1,7 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 
 module.exports = {
@@ -30,11 +29,5 @@ module.exports = {
       perChunkOutput: false, // set this to true if you want one file per chunk
       outputFilename: '[name].licenses.txt',
     }),
-    new CopyPlugin({
-      patterns: [
-        { from: './assets', to: './assets' },
-    ],
-  }),
-
   ],
 };
