@@ -22,7 +22,12 @@ module.exports = {
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       title: '3 toroids',
-      template: './src/index.html', // Path to your template file
+      template: './src/index.html', // Path to your existing template file
+    }),
+    new HtmlWebpackPlugin({
+      title: 'Toroid',
+      filename: 'toroid.html',  // Output file name
+      template: './src/toroid.html', // Path to your new template file
     }),
     new LicenseWebpackPlugin({
       // options go here, e.g.:
