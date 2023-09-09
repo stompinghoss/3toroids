@@ -1,6 +1,9 @@
 # Generating 3d geometry using ChatGPT 3.5 and 4
 
-For this example, I used ChatGPT+.
+For the more complex example, see the medium.com article. 
+
+For this simple example, I used ChatGPT+.
+
 The below documentation refers shows how a simple [example](./src/toroid.html) was built up. 
 
 For more complex examples, it's too time consuming to write up the conversation in each case. 
