@@ -1,6 +1,6 @@
 # Generating 3d geometry using ChatGPT 3.5 and 4
 
-For the more complex example, see the medium.com article. 
+For the more complex example, see the medium.com [article](https://fieldp.medium.com/chatgpt-early-learnings-e5e023aae356). 
 
 For this simple example, I used ChatGPT+.
 
